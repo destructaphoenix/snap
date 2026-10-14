@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
@@ -77,8 +78,14 @@ class CreateLinkRequest(BaseModel):
     @classmethod
     def validate_custom_code(cls, v: str | None) -> str | None:
         if v is not None:
-            if not re.match(r"^[a-zA-Z0-9-]{3,20}$", v):
-                raise ValueError("Custom code must be 3-20 chars, alphanumeric + hyphens")
+            if not 1 <= len(v) <= 20:
+                raise ValueError("Custom code must be 1-20 characters")
+            if v.isspace():
+                raise ValueError("Custom code cannot contain only spaces")
+            if "/" in v or "\\" in v:
+                raise ValueError("Custom code cannot contain slashes")
+            if any(unicodedata.category(char).startswith("C") for char in v):
+                raise ValueError("Custom code cannot contain control characters")
         return v
 
 

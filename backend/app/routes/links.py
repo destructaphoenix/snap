@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select, update
@@ -17,7 +18,7 @@ from app.schemas import (
     PaginatedLinksResponse,
     UpdateLinkRequest,
 )
-from app.services.url_service import generate_short_code
+from app.services.url_service import RESERVED_CODES, generate_short_code
 
 router = APIRouter(prefix="/api/links", tags=["links"])
 
@@ -38,7 +39,11 @@ def _link_to_response(link: Link, include_url: bool = True) -> dict:
         id=link.id,
         short_code=link.short_code,
         original_url=link.original_url,
-        short_url=f"{settings.BACKEND_BASE_URL}/{link.short_code}" if include_url else None,
+        short_url=(
+            f"{settings.BACKEND_BASE_URL.rstrip('/')}/{quote(link.short_code, safe='')}"
+            if include_url
+            else None
+        ),
         title=link.title,
         created_at=link.created_at.isoformat() if link.created_at else "",
         expires_at=link.expires_at.isoformat() if link.expires_at else None,
@@ -55,6 +60,8 @@ async def create_link(
     db: AsyncSession = Depends(get_db),
 ):
     if body.custom_code:
+        if body.custom_code in RESERVED_CODES:
+            raise HTTPException(status_code=400, detail="This custom code is reserved")
         existing = await db.execute(
             select(Link).where(Link.short_code == body.custom_code)
         )

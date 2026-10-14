@@ -50,7 +50,7 @@ class Link(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    short_code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
+    short_code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     original_url: Mapped[str] = mapped_column(Text, nullable=False)
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

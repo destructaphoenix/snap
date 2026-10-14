@@ -76,16 +76,17 @@ export function LinkDetail({ code, active, onUpdate, cached, onDataLoaded }: Pro
   const [editTitle, setEditTitle] = useState("");
   const [editUrl, setEditUrl] = useState("");
   const [editExpiry, setEditExpiry] = useState("");
+  const encodedCode = encodeURIComponent(code);
 
   const fetchData = useCallback(async () => {
     if (!accessToken) return;
     setLoading(true);
 
     const [clicksRes, refRes, devRes, geoRes] = await Promise.all([
-      apiFetch<{ points: TimePoint[] }>(`/api/links/${code}/clicks?range=${range}`, { token: accessToken }),
-      apiFetch<{ referrers: ReferrerItem[] }>(`/api/links/${code}/referrers`, { token: accessToken }),
-      apiFetch<{ devices: DeviceItem[]; browsers: BrowserItem[] }>(`/api/links/${code}/devices`, { token: accessToken }),
-      apiFetch<{ geo: GeoItem[] }>(`/api/links/${code}/geo`, { token: accessToken }),
+      apiFetch<{ points: TimePoint[] }>(`/api/links/${encodedCode}/clicks?range=${range}`, { token: accessToken }),
+      apiFetch<{ referrers: ReferrerItem[] }>(`/api/links/${encodedCode}/referrers`, { token: accessToken }),
+      apiFetch<{ devices: DeviceItem[]; browsers: BrowserItem[] }>(`/api/links/${encodedCode}/devices`, { token: accessToken }),
+      apiFetch<{ geo: GeoItem[] }>(`/api/links/${encodedCode}/geo`, { token: accessToken }),
     ]);
 
     const newPoints = clicksRes.data?.points ?? [];
@@ -111,7 +112,7 @@ export function LinkDetail({ code, active, onUpdate, cached, onDataLoaded }: Pro
         geo: newGeo,
       },
     });
-  }, [accessToken, code, range, onDataLoaded]);
+  }, [accessToken, code, encodedCode, range, onDataLoaded]);
 
   useEffect(() => {
     if (cached && range === cached.range) return;
@@ -120,7 +121,7 @@ export function LinkDetail({ code, active, onUpdate, cached, onDataLoaded }: Pro
 
   const handleDeactivate = async () => {
     if (!accessToken) return;
-    await apiFetch(`/api/links/${code}`, { method: "DELETE", token: accessToken });
+    await apiFetch(`/api/links/${encodedCode}`, { method: "DELETE", token: accessToken });
     onUpdate();
   };
 
@@ -280,7 +281,7 @@ export function LinkDetail({ code, active, onUpdate, cached, onDataLoaded }: Pro
                   if (editUrl.trim()) body.original_url = editUrl.trim();
                   if (editTitle.trim()) body.title = editTitle.trim();
                   if (editExpiry) body.expires_at = new Date(editExpiry).toISOString();
-                  await apiFetch(`/api/links/${code}`, {
+                  await apiFetch(`/api/links/${encodedCode}`, {
                     method: "PATCH",
                     body: JSON.stringify(body),
                     token: accessToken,
@@ -320,7 +321,7 @@ export function LinkDetail({ code, active, onUpdate, cached, onDataLoaded }: Pro
           <button
             onClick={async () => {
               if (!accessToken) return;
-              await apiFetch(`/api/links/${code}`, {
+              await apiFetch(`/api/links/${encodedCode}`, {
                 method: "PATCH",
                 body: JSON.stringify({ is_active: true }),
                 token: accessToken,

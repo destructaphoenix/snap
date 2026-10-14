@@ -12,11 +12,9 @@ from app.database import get_db
 from app.middleware.rate_limiter import rate_limit_redirect
 from app.models import Link
 from app.schemas import ApiResponse
+from app.services.url_service import RESERVED_CODES
 
 router = APIRouter(tags=["redirect"])
-
-RESERVED_CODES = {"api", "health", "docs", "openapi.json"}
-
 
 async def _log_click(
     request: Request,

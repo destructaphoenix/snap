@@ -34,7 +34,7 @@ export function CreateLinkModal({ onClose, onCreated }: Props) {
     setLoading(true);
 
     const body: Record<string, unknown> = { url };
-    if (customCode.trim()) body.custom_code = customCode.trim();
+    if (customCode.length > 0) body.custom_code = customCode;
     if (expiresIn !== null) body.expires_in = expiresIn;
 
     const res = await apiFetch<{ short_url: string }>("/api/links", {
@@ -106,9 +106,13 @@ export function CreateLinkModal({ onClose, onCreated }: Props) {
                 type="text"
                 value={customCode}
                 onChange={(e) => setCustomCode(e.target.value)}
-                placeholder="my-link"
+                maxLength={20}
+                placeholder="my link.v2"
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
               />
+              <p className="mt-1.5 text-xs text-zinc-500">
+                Up to 20 characters. Spaces, punctuation, and Unicode are supported; slashes are not.
+              </p>
             </div>
             <div>
               <label className="block text-sm text-zinc-400 mb-1.5">Expiry</label>

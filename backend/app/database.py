@@ -1,12 +1,16 @@
 import ssl
 
+import certifi
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
 
-ssl_context = ssl.create_default_context()
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+database_url = settings.DATABASE_URL.replace(
+    "postgresql://", "postgresql+asyncpg://", 1
+)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     echo=False,
     connect_args={"ssl": ssl_context},
     pool_pre_ping=True,
